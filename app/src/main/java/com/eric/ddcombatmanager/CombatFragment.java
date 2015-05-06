@@ -1,7 +1,10 @@
 package com.eric.ddcombatmanager;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.FragmentManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
@@ -11,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
@@ -86,7 +90,7 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
         // some sample creatures
         mCreatureList = new ArrayList<Creature>();
         mCreatureList.add(new Creature("Joe", 3,111));
-        mCreatureList.add(new Creature("Bob", 5,12));
+        mCreatureList.add(new Creature("Bob", 5, 12));
 
         mAdapter = new CreatureAdapter(getActivity(),
                 R.layout.creature_list_summary, mCreatureList);
@@ -139,11 +143,10 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
             TextView nameView, initView, healthView;
         }
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             ViewHolder holder;
             if (convertView == null) {
-                LayoutInflater inflater = (LayoutInflater) mContext
-                        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                LayoutInflater inflater = getActivity().getLayoutInflater();
                 convertView = inflater.inflate(mResourceId, null);
                 holder = new ViewHolder();
                 holder.healthView = (TextView) convertView.findViewById(R.id.healthText);
@@ -155,14 +158,59 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            Creature creature = getItem(position);
+            final Creature creature = getItem(position);
             holder.healthView.setText(creature.mCurrentHealth + "/" + creature.mMaxHealth);
             holder.nameView.setText(creature.mName);
             holder.initView.setText(Integer.toString(creature.mInitiative));
             holder.initView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d("Eric","init clicked, in the future this will open a dialog");
+                    LayoutInflater inflater = getActivity().getLayoutInflater();
+                    View view = inflater.inflate(R.layout.text_input_dialog, null);
+                    TextView label = (TextView) view.findViewById(R.id.labelText);
+                    label.setText(R.string.initiative);
+                    final EditText input = (EditText) view.findViewById(R.id.inputText);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setView(view);
+                    builder.setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            creature.mInitiative = Integer.valueOf(input.getText().toString());
+                            updateInitiativeOrder();
+                        }
+                    });
+                    builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    builder.create().show();
+                }
+            });
+            holder.healthView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    LayoutInflater inflater = getActivity().getLayoutInflater();
+                    View view = inflater.inflate(R.layout.text_input_dialog, null);
+                    TextView label = (TextView) view.findViewById(R.id.labelText);
+                    label.setText(R.string.current_hp);
+                    final EditText input = (EditText) view.findViewById(R.id.inputText);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setView(view);
+                    builder.setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            creature.mCurrentHealth = Integer.valueOf(input.getText().toString());
+                        }
+                    });
+                    builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    builder.create().show();
                 }
             });
             return convertView;
@@ -171,6 +219,10 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Log.d("Eric", "item clicked " + view.toString());
+        CreatureDetails creatureDetails = new CreatureDetails();
+        creatureDetails.setCreature(mCreatureList.get(position));
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.fragment_holder,creatureDetails).addToBackStack(null).commit();
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
