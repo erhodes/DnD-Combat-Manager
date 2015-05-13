@@ -7,6 +7,8 @@ public class Creature {
     int mInitiative, mInitiativeMod, mMaxHealth, mCurrentHealth;
     String mName;
 
+    public Creature() {}
+
     public Creature(String name, int init, int maxHealth) {
         this(name, init, maxHealth, maxHealth);
     }

@@ -2,13 +2,16 @@ package com.eric.ddcombatmanager;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -18,64 +21,20 @@ import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-
-import com.eric.ddcombatmanager.dummy.DummyContent;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * Large screen devices (such as tablets) are supported by replacing the ListView
- * with a GridView.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
- * interface.
- */
 public class CombatFragment extends Fragment implements AbsListView.OnItemClickListener {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
+    private CreatureManager mCreatureManager;
     private OnFragmentInteractionListener mListener;
-
-    /**
-     * The fragment's ListView/GridView.
-     */
+    private boolean mBound = false;
     private AbsListView mListView;
-
-    /**
-     * The Adapter which will be used to populate the ListView/GridView with
-     * Views.
-     */
     private CreatureAdapter mAdapter;
-
     private ArrayList<Creature> mCreatureList;
 
-    // TODO: Rename and change types of parameters
-    public static CombatFragment newInstance(String param1, String param2) {
-        CombatFragment fragment = new CombatFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
     public CombatFragment() {
     }
 
@@ -83,17 +42,14 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+        mCreatureManager = CreatureManager.getInstance(getActivity());
         // some sample creatures
-        mCreatureList = new ArrayList<Creature>();
-        mCreatureList.add(new Creature("Joe", 3,111));
-        mCreatureList.add(new Creature("Bob", 5, 12));
+        DatabaseHelper db = new DatabaseHelper(getActivity());
+        mCreatureList = mCreatureManager.getCreatures();
 
         mAdapter = new CreatureAdapter(getActivity(),
                 R.layout.creature_list_summary, mCreatureList);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -130,6 +86,28 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
         mListener = null;
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mBound) {
+
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(
+            Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_combat_fragment, menu);
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_roll_init) {
+            rollInitiative();
+            return true;
+        }
+        return false;
+    }
     public class CreatureAdapter extends ArrayAdapter<Creature> {
         int mResourceId;
         Context mContext;
@@ -219,14 +197,14 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Log.d("Eric", "item clicked " + view.toString());
-        CreatureDetails creatureDetails = new CreatureDetails();
-        creatureDetails.setCreature(mCreatureList.get(position));
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.fragment_holder,creatureDetails).addToBackStack(null).commit();
+        CreatureDetails creatureDetails = CreatureDetails.newInstance(position);
+        FragmentManager fragmentManager = getActivity().getFragmentManager();
+
+        fragmentManager.beginTransaction().replace(android.R.id.content,creatureDetails).addToBackStack(null).commit();
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            //mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
         }
     }
 

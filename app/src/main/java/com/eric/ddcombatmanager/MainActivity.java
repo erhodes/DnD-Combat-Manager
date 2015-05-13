@@ -9,16 +9,15 @@ import android.view.MenuItem;
 
 public class MainActivity extends Activity {
 
-    CombatFragment mCombatFragment;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         FragmentManager fragmentManager = getFragmentManager();
-        mCombatFragment = (CombatFragment)fragmentManager.findFragmentById(R.id.fragment_holder);
-        //FragmentManager fragmentManager = getFragmentManager();
-        //fragmentManager.beginTransaction().replace(R.id.fragment_holder,new CombatFragment()).commit();
+        if (savedInstanceState == null) {
+            CombatFragment combatFragment = new CombatFragment();
+            fragmentManager.beginTransaction().replace(android.R.id.content, combatFragment).commit();
+        }
     }
 
     @Override
@@ -30,16 +29,8 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            return true;
-        } else if (id == R.id.action_roll_init) {
-            mCombatFragment.rollInitiative();
             return true;
         }
 
