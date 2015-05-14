@@ -2,5 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/action_roll_init" android:title="@string/roll_init"
         android:orderInCategory="100" android:showAsAction="never" />
+    <item android:id="@+id/action_add_new_creature" android:title="@string/add_new_creature"
+        android:orderInCategory="100" android:showAsAction="never" />
 
 </menu>

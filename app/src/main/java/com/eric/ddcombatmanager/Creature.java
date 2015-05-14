@@ -21,4 +21,11 @@ public class Creature {
         mCurrentHealth = currentHealth;
     }
 
+    public Creature(Creature c) {
+        mName = c.mName;
+        mInitiative = c.mInitiative;
+        mInitiativeMod = c.mInitiativeMod;
+        mMaxHealth = c.mMaxHealth;
+        mCurrentHealth = c.mCurrentHealth;
+    }
 }

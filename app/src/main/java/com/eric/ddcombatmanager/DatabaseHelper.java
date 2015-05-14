@@ -5,9 +5,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.SparseArray;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Eric on 06/05/2015.
@@ -43,8 +46,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public ArrayList<Creature> getCreatures() {
-        ArrayList<Creature> result = new ArrayList<Creature>();
+    public HashMap<String, Creature> getCreatures() {
+        HashMap<String, Creature> result = new HashMap<String, Creature>();
         String[] projection = new String[]{KEY_NAME, KEY_INITIATIVE, KEY_INITIATIVE_MOD, KEY_CURRENT_HEALTH, KEY_MAX_HEALTH};
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(CREATURE_TABLE_NAME, projection, null, null, null, null, null);
@@ -58,7 +61,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 c.mInitiativeMod = cursor.getInt(2);
                 c.mCurrentHealth = cursor.getInt(3);
                 c.mMaxHealth = cursor.getInt(4);
-                result.add(c);
+                result.put(c.mName, c);
             }
         }
         cursor.close();
@@ -69,21 +72,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void saveCreature(Creature c) {
         SQLiteDatabase db = getWritableDatabase();
+
         ContentValues values = new ContentValues();
         values.put(KEY_NAME,c.mName);
         values.put(KEY_INITIATIVE_MOD, c.mInitiativeMod);
         values.put(KEY_INITIATIVE, c.mInitiative);
         values.put(KEY_CURRENT_HEALTH, c.mCurrentHealth);
         values.put(KEY_MAX_HEALTH, c.mMaxHealth);
+
         db.insert(CREATURE_TABLE_NAME, null, values);
-        /*
-        String save_Creature = "INSERT INTO " + CREATURE_TABLE_NAME + " values (" +
-                c.mName + ", " +
-                c.mInitiative + ", " +
-                c.mInitiativeMod + ", " +
-                c.mCurrentHealth + ", " +
-                c.mMaxHealth + ")";
-        db.execSQL(save_Creature);
-        */
+        db.close();
+    }
+
+    public void removeCreature(Creature c) {
+        SQLiteDatabase db = getWritableDatabase();
+        String selection = KEY_NAME + " LIKE ?";
+        String[] selectionArgs = {c.mName};
+
+        db.delete(CREATURE_TABLE_NAME,
+                selection, selectionArgs);
+        db.close();
+    }
+
+    public void updateCreature(Creature c) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_INITIATIVE_MOD, c.mInitiativeMod);
+        values.put(KEY_INITIATIVE, c.mInitiative);
+        values.put(KEY_CURRENT_HEALTH, c.mCurrentHealth);
+        values.put(KEY_MAX_HEALTH, c.mMaxHealth);
+
+        String selection = KEY_NAME + " LIKE ?";
+        String[] selectionArgs = {c.mName};
+
+        db.update(CREATURE_TABLE_NAME, values,
+                selection, selectionArgs);
+        db.close();
     }
 }

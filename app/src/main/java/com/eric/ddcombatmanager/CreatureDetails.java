@@ -16,16 +16,17 @@ import android.widget.EditText;
  * Created by Eric on 05/05/2015.
  */
 public class CreatureDetails extends Fragment {
+    public static final String NEW_CREATURE = "";
     private static final String ARG_CREATURE_ID = "param_creature_id";
     private Creature mCreature;
     private CreatureManager mCreatureManager;
-    private int mCreatureId = -1;
+    private String mCreatureName = "";
     private EditText mHealthEditText, mInitModEditText, mNameEditText;
 
-    public static CreatureDetails newInstance(int creatureId) {
+    public static CreatureDetails newInstance(String creatureName) {
         CreatureDetails fragment = new CreatureDetails();
         Bundle args = new Bundle();
-        args.putInt(ARG_CREATURE_ID, creatureId);
+        args.putString(ARG_CREATURE_ID, creatureName);
         fragment.setArguments(args);
         return fragment;
     };
@@ -37,10 +38,10 @@ public class CreatureDetails extends Fragment {
         super.onCreate(savedInstanceState);
         mCreatureManager = CreatureManager.getInstance(getActivity());
         if (getArguments() != null) {
-            mCreatureId = getArguments().getInt(ARG_CREATURE_ID, -1);
+            mCreatureName = getArguments().getString(ARG_CREATURE_ID, NEW_CREATURE);
         }
-        if (mCreatureId > -1) {
-            mCreature = mCreatureManager.getCreature(mCreatureId);
+        if (!mCreatureName.equals(NEW_CREATURE)) {
+            mCreature = mCreatureManager.getCreature(mCreatureName);
         } else {
             mCreature = new Creature();
         }
@@ -62,7 +63,9 @@ public class CreatureDetails extends Fragment {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mCreature.mMaxHealth = Integer.valueOf(s.toString());
+                if (s.length() > 0) {
+                    mCreature.mMaxHealth = Integer.valueOf(s.toString());
+                }
             }
             @Override
             public void afterTextChanged(Editable s) {
@@ -76,7 +79,8 @@ public class CreatureDetails extends Fragment {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mCreature.mInitiativeMod = Integer.valueOf(s.toString());
+                if (s.length() > 0)
+                    mCreature.mInitiativeMod = Integer.valueOf(s.toString());
             }
             @Override
             public void afterTextChanged(Editable s) {
@@ -112,9 +116,16 @@ public class CreatureDetails extends Fragment {
         int id = item.getItemId();
 
         if (id == R.id.action_save_creature) {
-            //TODO: save to a database or something
-            CreatureManager creatureManager = CreatureManager.getInstance(getActivity());
-            creatureManager.saveCreature(mCreature);
+            mCreatureManager.saveCreature(mCreature);
+            return true;
+        } else if (id == R.id.action_duplicate_creature) {
+            // TODO: Implement this in a better way
+            Creature c = mCreatureManager.duplicateCreature(mCreature);
+            mCreatureManager.saveCreature(c);
+            return true;
+        } else if (id == R.id.action_delete_creature) {
+            mCreatureManager.removeCreature(mCreature);
+            getActivity().onBackPressed();
             return true;
         }
 

@@ -43,13 +43,20 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
         super.onCreate(savedInstanceState);
 
         mCreatureManager = CreatureManager.getInstance(getActivity());
-        // some sample creatures
-        DatabaseHelper db = new DatabaseHelper(getActivity());
         mCreatureList = mCreatureManager.getCreatures();
 
         mAdapter = new CreatureAdapter(getActivity(),
                 R.layout.creature_list_summary, mCreatureList);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mCreatureList = mCreatureManager.getCreatures();
+        mAdapter = new CreatureAdapter(getActivity(),
+                R.layout.creature_list_summary, mCreatureList);
+        mListView.setAdapter(mAdapter);
     }
 
     @Override
@@ -87,14 +94,6 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        if (mBound) {
-
-        }
-    }
-
-    @Override
     public void onCreateOptionsMenu(
             Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_combat_fragment, menu);
@@ -105,9 +104,18 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
         if (id == R.id.action_roll_init) {
             rollInitiative();
             return true;
+        } else if (id == R.id.action_add_new_creature) {
+            addNewCreature();
         }
         return false;
     }
+
+    public void addNewCreature() {
+        CreatureDetails creatureDetails = CreatureDetails.newInstance(CreatureDetails.NEW_CREATURE);
+        FragmentManager fragmentManager = getActivity().getFragmentManager();
+        fragmentManager.beginTransaction().replace(android.R.id.content,creatureDetails).addToBackStack(null).commit();
+    }
+
     public class CreatureAdapter extends ArrayAdapter<Creature> {
         int mResourceId;
         Context mContext;
@@ -197,7 +205,8 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Log.d("Eric", "item clicked " + view.toString());
-        CreatureDetails creatureDetails = CreatureDetails.newInstance(position);
+        Creature c = (Creature)parent.getItemAtPosition(position);
+        CreatureDetails creatureDetails = CreatureDetails.newInstance(c.mName);
         FragmentManager fragmentManager = getActivity().getFragmentManager();
 
         fragmentManager.beginTransaction().replace(android.R.id.content,creatureDetails).addToBackStack(null).commit();

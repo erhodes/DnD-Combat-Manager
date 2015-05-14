@@ -2,4 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/action_save_creature" android:title="Save Creature"
         android:orderInCategory="100" android:showAsAction="never" />
+    <item android:id="@+id/action_duplicate_creature" android:title="Duplicate Creature"
+        android:orderInCategory = "99" android:showAsAction="never" />
+    <item android:id="@+id/action_delete_creature" android:title="Delete Creature"
+        android:orderInCategory = "99" android:showAsAction="never" />
 </menu>

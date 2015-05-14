@@ -12,6 +12,7 @@
 
     <!-- Actions -->
     <string name="roll_init">Roll Initiative</string>
+    <string name="add_new_creature">Add New Creature</string>
 
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
