@@ -57,6 +57,7 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
         mAdapter = new CreatureAdapter(getActivity(),
                 R.layout.creature_list_summary, mCreatureList);
         mListView.setAdapter(mAdapter);
+        updateInitiativeOrder();
     }
 
     @Override

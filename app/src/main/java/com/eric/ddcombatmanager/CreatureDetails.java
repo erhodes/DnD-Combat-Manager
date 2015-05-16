@@ -63,9 +63,9 @@ public class CreatureDetails extends Fragment {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > 0) {
+                try {
                     mCreature.mMaxHealth = Integer.valueOf(s.toString());
-                }
+                } catch (NumberFormatException ex) {}
             }
             @Override
             public void afterTextChanged(Editable s) {
@@ -79,8 +79,9 @@ public class CreatureDetails extends Fragment {
             }
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > 0)
+                try {
                     mCreature.mInitiativeMod = Integer.valueOf(s.toString());
+                } catch (NumberFormatException ex) {}
             }
             @Override
             public void afterTextChanged(Editable s) {
@@ -95,7 +96,8 @@ public class CreatureDetails extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mCreature.mName = s.toString();
+                if (s.length() > 1)
+                    mCreature.mName = s.toString();
             }
 
             @Override
