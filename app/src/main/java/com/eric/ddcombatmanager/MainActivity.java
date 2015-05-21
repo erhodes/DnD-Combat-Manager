@@ -15,8 +15,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         FragmentManager fragmentManager = getFragmentManager();
         if (savedInstanceState == null) {
-            CombatFragment combatFragment = new CombatFragment();
-            fragmentManager.beginTransaction().replace(android.R.id.content, combatFragment).commit();
+            fragmentManager.beginTransaction().replace(android.R.id.content, new MenuFragment()).commit();
         }
     }
 

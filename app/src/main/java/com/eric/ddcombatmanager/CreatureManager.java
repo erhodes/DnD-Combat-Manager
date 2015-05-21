@@ -49,6 +49,14 @@ public class CreatureManager {
         return creatures;
     }
 
+    public ArrayList<String> getCreatureNames() {
+        ArrayList<String> creatures = new ArrayList<String>();
+        for (Creature c : mCreatureList.values()) {
+            creatures.add(c.mName);
+        }
+        return creatures;
+    }
+
     /**
      * Returns a copy of the given creature. The copy is identical save the name, which will be
      * c.name1, c.name2, etc

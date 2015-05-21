@@ -28,12 +28,22 @@ import java.util.List;
 import java.util.Random;
 
 public class CombatFragment extends Fragment implements AbsListView.OnItemClickListener {
+    private static final String ARG_ENCOUNTER_NAME = "arg_encounter_name";
     private CreatureManager mCreatureManager;
     private OnFragmentInteractionListener mListener;
     private boolean mBound = false;
     private AbsListView mListView;
-    private CreatureAdapter mAdapter;
-    private ArrayList<Creature> mCreatureList;
+    private CombatantAdapter mAdapter;
+    private ArrayList<Combatant> mCombatantList;
+    private Encounter mEncounter;
+
+    public static CombatFragment newInstance(String encounterName) {
+        CombatFragment fragment = new CombatFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_ENCOUNTER_NAME, encounterName);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     public CombatFragment() {
     }
@@ -43,19 +53,29 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
         super.onCreate(savedInstanceState);
 
         mCreatureManager = CreatureManager.getInstance(getActivity());
-        mCreatureList = mCreatureManager.getCreatures();
+        if (getArguments() != null) {
+            DatabaseHelper db = new DatabaseHelper(getActivity());
+            mEncounter = db.getEncounter(getArguments().getString(ARG_ENCOUNTER_NAME));
+        } else {
+            mEncounter = new Encounter("Default");
+            for (Creature c : mCreatureManager.getCreatures()) {
+                mEncounter.addCreature(c);
+            }
+        }
 
-        mAdapter = new CreatureAdapter(getActivity(),
-                R.layout.creature_list_summary, mCreatureList);
+        mCombatantList = mEncounter.getCombatants();
+
+        mAdapter = new CombatantAdapter(getActivity(),
+                R.layout.creature_list_summary, mCombatantList);
         setHasOptionsMenu(true);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mCreatureList = mCreatureManager.getCreatures();
-        mAdapter = new CreatureAdapter(getActivity(),
-                R.layout.creature_list_summary, mCreatureList);
+        mCombatantList = mEncounter.getCombatants();
+        mAdapter = new CombatantAdapter(getActivity(),
+                R.layout.creature_list_summary, mCombatantList);
         mListView.setAdapter(mAdapter);
         updateInitiativeOrder();
     }
@@ -105,6 +125,9 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
         if (id == R.id.action_roll_init) {
             rollInitiative();
             return true;
+        } else if (id == R.id.action_save_encounter) {
+            DatabaseHelper db = new DatabaseHelper(getActivity());
+            db.saveEncounter(mEncounter);
         } else if (id == R.id.action_add_new_creature) {
             addNewCreature();
         }
@@ -117,11 +140,11 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
         fragmentManager.beginTransaction().replace(android.R.id.content,creatureDetails).addToBackStack(null).commit();
     }
 
-    public class CreatureAdapter extends ArrayAdapter<Creature> {
+    public class CombatantAdapter extends ArrayAdapter<Combatant> {
         int mResourceId;
         Context mContext;
-        public CreatureAdapter(Context context, int resourceId, List<Creature> creatureList) {
-            super(context, resourceId, creatureList);
+        public CombatantAdapter(Context context, int resourceId, List<Combatant> combatantList) {
+            super(context, resourceId, combatantList);
             mResourceId = resourceId;
             mContext = context;
         }
@@ -145,10 +168,10 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            final Creature creature = getItem(position);
-            holder.healthView.setText(creature.mCurrentHealth + "/" + creature.mMaxHealth);
-            holder.nameView.setText(creature.mName);
-            holder.initView.setText(Integer.toString(creature.mInitiative));
+            final Combatant combatant = getItem(position);
+            holder.healthView.setText(combatant.mCurrentHealth + "/" + combatant.mMaxHealth);
+            holder.nameView.setText(combatant.mName);
+            holder.initView.setText(Integer.toString(combatant.mInitiative));
             holder.initView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -162,7 +185,7 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
                     builder.setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            creature.mInitiative = Integer.valueOf(input.getText().toString());
+                            combatant.mInitiative = Integer.valueOf(input.getText().toString());
                             updateInitiativeOrder();
                         }
                     });
@@ -188,7 +211,7 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
                     builder.setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            creature.mCurrentHealth = Integer.valueOf(input.getText().toString());
+                            combatant.mCurrentHealth = Integer.valueOf(input.getText().toString());
                         }
                     });
                     builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -205,30 +228,24 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
     }
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Log.d("Eric", "item clicked " + view.toString());
         Creature c = (Creature)parent.getItemAtPosition(position);
         CreatureDetails creatureDetails = CreatureDetails.newInstance(c.mName);
         FragmentManager fragmentManager = getActivity().getFragmentManager();
 
         fragmentManager.beginTransaction().replace(android.R.id.content,creatureDetails).addToBackStack(null).commit();
-        if (null != mListener) {
-            // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
-            //mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
-        }
     }
 
     public void rollInitiative() {
         Random rand = new Random();
-        for (Creature c : mCreatureList) {
+        for (Combatant c : mCombatantList) {
             c.mInitiative = rand.nextInt(20) + 1 + c.mInitiativeMod;
         }
         updateInitiativeOrder();
     }
     public void updateInitiativeOrder() {
-        Collections.sort(mCreatureList, new Comparator<Creature>() {
+        Collections.sort(mCombatantList, new Comparator<Combatant>() {
             @Override
-            public int compare(Creature lhs, Creature rhs) {
+            public int compare(Combatant lhs, Combatant rhs) {
                 if (rhs.mInitiative > lhs.mInitiative) {
                     return 1;
                 } else if (rhs.mInitiative < lhs.mInitiative) {

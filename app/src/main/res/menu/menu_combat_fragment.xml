@@ -4,5 +4,6 @@
         android:orderInCategory="100" android:showAsAction="never" />
     <item android:id="@+id/action_add_new_creature" android:title="@string/add_new_creature"
         android:orderInCategory="100" android:showAsAction="never" />
-
+    <item android:id="@+id/action_save_encounter" android:title="@string/save_encounter"
+        android:orderInCategory="100" android:showAsAction="never" />
 </menu>

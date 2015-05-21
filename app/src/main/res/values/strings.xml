@@ -9,6 +9,11 @@
 
     <string name="initiative">Initiative</string>
     <string name="current_hp">Current Health</string>
+    
+    <string name="save_encounter">Save Encounter</string>
+
+    <string name="encounters">Encounters</string>
+    <string name="creatures">Creatures</string>
 
     <!-- Actions -->
     <string name="roll_init">Roll Initiative</string>
