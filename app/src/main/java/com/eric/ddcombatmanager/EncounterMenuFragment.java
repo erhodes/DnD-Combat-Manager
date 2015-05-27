@@ -68,8 +68,11 @@ public class EncounterMenuFragment extends ListFragment {
         builder.setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                Encounter e = new Encounter(input.getText().toString());
+                DatabaseHelper db = new DatabaseHelper(getActivity());
+                db.saveEncounter(e);
                 getActivity().getFragmentManager().beginTransaction()
-                        .replace(android.R.id.content, CombatFragment.newInstance(input.getText().toString()))
+                        .replace(android.R.id.content, CombatFragment.newInstance(e.mName))
                         .addToBackStack(null).commit();
             }
         });

@@ -6,4 +6,6 @@
         android:orderInCategory="100" android:showAsAction="never" />
     <item android:id="@+id/action_save_encounter" android:title="@string/save_encounter"
         android:orderInCategory="100" android:showAsAction="never" />
+    <item android:id="@+id/action_remove_encounter" android:title="@string/remove_encounter"
+        android:orderInCategory="100" android:showAsAction="never" />
 </menu>

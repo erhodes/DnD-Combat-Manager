@@ -19,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
             }
         }
 
+        Log.d("Eric","encounter name is " + mEncounter.mName);
         mCombatantList = mEncounter.getCombatants();
 
         mAdapter = new CombatantAdapter(getActivity(),
@@ -127,17 +129,46 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
             return true;
         } else if (id == R.id.action_save_encounter) {
             DatabaseHelper db = new DatabaseHelper(getActivity());
-            db.saveEncounter(mEncounter);
+            db.updateEncounter(mEncounter);
         } else if (id == R.id.action_add_new_creature) {
             addNewCreature();
+        } else if (id == R.id.action_remove_encounter) {
+            DatabaseHelper db = new DatabaseHelper(getActivity());
+            db.removeEncounter(mEncounter);
+            getActivity().onBackPressed();
+            return true;
         }
         return false;
     }
 
     public void addNewCreature() {
-        CreatureDetails creatureDetails = CreatureDetails.newInstance(CreatureDetails.NEW_CREATURE);
-        FragmentManager fragmentManager = getActivity().getFragmentManager();
-        fragmentManager.beginTransaction().replace(android.R.id.content,creatureDetails).addToBackStack(null).commit();
+        View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_creature_selection, null);
+        final Spinner creatureSpinner = (Spinner) view.findViewById(R.id.spinner_creature);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, mCreatureManager.getCreatureNames());
+        creatureSpinner.setAdapter(adapter);
+
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setView(view);
+        builder.setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Combatant c = new Combatant(mCreatureManager.getCreature((String)creatureSpinner.getSelectedItem()));
+                mEncounter.addCombatant(c);
+                DatabaseHelper db = new DatabaseHelper(getActivity());
+                db.insertCombatant(c,mEncounter);
+                mAdapter.notifyDataSetChanged();
+                mListView.invalidate();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.create().show();
     }
 
     public class CombatantAdapter extends ArrayAdapter<Combatant> {

@@ -37,7 +37,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             CombatantEntry.COLUMN_BASE_NAME + " String, " +
             CombatantEntry.COLUMN_INITIATIVE + " int, " +
             CombatantEntry.COLUMN_CURRENT_HEALTH + " int, " +
-            "FOREIGN KEY(" + CombatantEntry.COLUMN_ENCOUNTER_NAME + ") REFERENCES " + EncounterEntry.TABLE_NAME + "(" + EncounterEntry.COLUMN_TITLE + "));";
+            "foreign key(" + CombatantEntry.COLUMN_ENCOUNTER_NAME + ") references " + EncounterEntry.TABLE_NAME + "(" + EncounterEntry.COLUMN_TITLE + ") on delete cascade," +
+            "primary key(" + CombatantEntry.COLUMN_DISPLAY_NAME + ", " + CombatantEntry.COLUMN_ENCOUNTER_NAME + "));";
 
 
 
@@ -167,6 +168,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void updateEncounter(Encounter e) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        for (Combatant c : e.getCombatants()) {
+            ContentValues combatantValues = new ContentValues();
+            //combatantValues.put(CombatantEntry.COLUMN_ENCOUNTER_NAME, e.mName);
+            //combatantValues.put(CombatantEntry.COLUMN_DISPLAY_NAME, c.mDisplayName);
+            combatantValues.put(CombatantEntry.COLUMN_BASE_NAME, c.mName);
+            combatantValues.put(CombatantEntry.COLUMN_INITIATIVE, c.mInitiative);
+            combatantValues.put(CombatantEntry.COLUMN_CURRENT_HEALTH, c.mCurrentHealth);
+            String selection = CombatantEntry.COLUMN_ENCOUNTER_NAME + " is ? and " + CombatantEntry.COLUMN_DISPLAY_NAME + " is ?";
+            String[] selectionArgs = {e.mName, c.mDisplayName};
+            db.update(CombatantEntry.TABLE_NAME, combatantValues, null, null);
+        }
+        db.close();
+    }
+
     /**
      * Get a list of all encounters. Faster than loading them all up.
      * @return
@@ -193,8 +211,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 CombatantEntry.COLUMN_INITIATIVE, CombatantEntry.COLUMN_CURRENT_HEALTH,
                 CombatantEntry.COLUMN_DISPLAY_NAME};
         SQLiteDatabase db = getReadableDatabase();
-        String selection = CombatantEntry.COLUMN_ENCOUNTER_NAME + " IS '" + name + "'";
-        Cursor cursor = db.query(CombatantEntry.TABLE_NAME, projection, null, null, null, null, null);
+        String selection = CombatantEntry.COLUMN_ENCOUNTER_NAME + " LIKE ?";
+        String[] selectionArgs = {name};
+        Cursor cursor = db.query(CombatantEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, null);
 
         Encounter result = new Encounter(name);
         if (cursor.getCount() > 0) {
@@ -216,6 +235,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void removeEncounter(Encounter e) {
+        SQLiteDatabase db = getWritableDatabase();
+        String selection = EncounterEntry.COLUMN_TITLE + " LIKE ?";
+        String[] selectionArgs = {e.mName};
 
+        db.delete(EncounterEntry.TABLE_NAME,
+                selection, selectionArgs);
+        db.close();
+    }
+
+    public void insertCombatant(Combatant c, Encounter e) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(CombatantEntry.COLUMN_BASE_NAME,c.mName);
+        values.put(CombatantEntry.COLUMN_ENCOUNTER_NAME, e.mName);
+        values.put(CombatantEntry.COLUMN_CURRENT_HEALTH, c.mCurrentHealth);
+        values.put(CombatantEntry.COLUMN_INITIATIVE, c.mInitiative);
+
+        db.insert(CombatantEntry.TABLE_NAME, null, values);
+        db.close();
+    }
+
+    public void updateCombatant(Combatant c, Encounter e) {
+
+    }
+    public void removeCombatant(Combatant c, Encounter e) {
+        SQLiteDatabase db = getWritableDatabase();
+        String selection = CombatantEntry.COLUMN_ENCOUNTER_NAME + " LIKE ? and " + CombatantEntry.COLUMN_DISPLAY_NAME + " is ?";
+        String[] selectionArgs = {e.mName, c.mName};
+
+        db.delete(CombatantEntry.TABLE_NAME,
+                selection, selectionArgs);
+        db.close();
     }
 }

@@ -36,8 +36,6 @@ public class CreatureManager {
         Log.d("Eric", "size is " + mCreatureList.size());
         if (mCreatureList.size() == 0) {
             mCreatureList = new HashMap<String, Creature>();
-            mCreatureList.put("Joe", new Creature("Joe", 3,111));
-            mCreatureList.put("Bob", new Creature("Bob", 5, 12));
         }
     }
 
