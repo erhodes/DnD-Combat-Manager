@@ -100,18 +100,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String selection = KEY_NAME + " IS '" + name + "'";
         Cursor cursor = db.query(CREATURE_TABLE_NAME, projection, selection, null, null, null, null);
 
+        Creature c = new Creature();
         if (cursor.getCount() > 0) {
             cursor.moveToNext();
-            Creature c = new Creature();
             c.mName = cursor.getString(0);
             c.mInitiativeMod = cursor.getInt(1);
             c.mMaxHealth = cursor.getInt(2);
-            return c;
         }
         cursor.close();
         db.close();
 
-        return null;
+        return c;
     }
     public void saveCreature(Creature c) {
         SQLiteDatabase db = getWritableDatabase();
@@ -249,12 +248,57 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(CombatantEntry.COLUMN_BASE_NAME,c.mName);
+        values.put(CombatantEntry.COLUMN_DISPLAY_NAME, c.mDisplayName);
         values.put(CombatantEntry.COLUMN_ENCOUNTER_NAME, e.mName);
         values.put(CombatantEntry.COLUMN_CURRENT_HEALTH, c.mCurrentHealth);
         values.put(CombatantEntry.COLUMN_INITIATIVE, c.mInitiative);
 
         db.insert(CombatantEntry.TABLE_NAME, null, values);
         db.close();
+    }
+
+    public Combatant getCombatant (String name, Encounter e) {
+        String[] projection = new String[]{CombatantEntry.COLUMN_BASE_NAME, CombatantEntry.COLUMN_INITIATIVE, CombatantEntry.COLUMN_CURRENT_HEALTH};
+        SQLiteDatabase db = getReadableDatabase();
+        String selection = CombatantEntry.COLUMN_DISPLAY_NAME + " is ? and " + CombatantEntry.COLUMN_ENCOUNTER_NAME + " is ?";
+        String[] selectionArgs = {name, e.mName};
+        Cursor cursor = db.query(CombatantEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, null);
+
+        if (cursor.getCount() > 0) {
+            cursor.moveToNext();
+            Combatant c = new Combatant(getCreature(cursor.getString(0)));
+            c.mInitiative = cursor.getInt(1);
+            c.mCurrentHealth = cursor.getInt(2);
+            c.mDisplayName = name;
+            cursor.close();
+            db.close();
+            return c;
+        }
+        cursor.close();
+        db.close();
+        return null;
+    }
+
+    public ArrayList<Combatant> getCombatants() {
+        ArrayList<Combatant> result = new ArrayList<Combatant>();
+
+        String[] projection = new String[]{CombatantEntry.COLUMN_BASE_NAME, CombatantEntry.COLUMN_INITIATIVE, CombatantEntry.COLUMN_CURRENT_HEALTH,
+        CombatantEntry.COLUMN_DISPLAY_NAME, CombatantEntry.COLUMN_ENCOUNTER_NAME};
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(CombatantEntry.TABLE_NAME, projection, null, null, null, null, null);
+
+        if (cursor.getCount() > 0) {
+            while (!cursor.isLast()) {
+                cursor.moveToNext();
+                Log.d("Eric","base name is " + cursor.getString(0));
+                Log.d("Eric","display name is " + cursor.getString(3));
+                Log.d("Eric","encounter name is " + cursor.getString(4));
+            }
+        }
+        cursor.close();
+        db.close();
+
+        return result;
     }
 
     public void updateCombatant(Combatant c, Encounter e) {

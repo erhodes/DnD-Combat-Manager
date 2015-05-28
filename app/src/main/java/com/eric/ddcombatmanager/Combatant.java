@@ -6,6 +6,7 @@ package com.eric.ddcombatmanager;
 public class Combatant extends Creature {
     public int mCurrentHealth, mInitiative;
     public String mDisplayName;
+    Encounter mEncounter;
 
     Combatant(Creature c) {
         super(c);

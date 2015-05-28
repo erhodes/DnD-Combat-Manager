@@ -64,7 +64,6 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
             }
         }
 
-        Log.d("Eric","encounter name is " + mEncounter.mName);
         mCombatantList = mEncounter.getCombatants();
 
         mAdapter = new CombatantAdapter(getActivity(),
@@ -154,7 +153,7 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
         builder.setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Combatant c = new Combatant(mCreatureManager.getCreature((String)creatureSpinner.getSelectedItem()));
+                Combatant c = new Combatant(mCreatureManager.getCreature((String) creatureSpinner.getSelectedItem()));
                 mEncounter.addCombatant(c);
                 DatabaseHelper db = new DatabaseHelper(getActivity());
                 db.insertCombatant(c,mEncounter);
@@ -201,7 +200,7 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
 
             final Combatant combatant = getItem(position);
             holder.healthView.setText(combatant.mCurrentHealth + "/" + combatant.mMaxHealth);
-            holder.nameView.setText(combatant.mName);
+            holder.nameView.setText(combatant.mDisplayName);
             holder.initView.setText(Integer.toString(combatant.mInitiative));
             holder.initView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -260,10 +259,10 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Creature c = (Creature)parent.getItemAtPosition(position);
-        CreatureDetails creatureDetails = CreatureDetails.newInstance(c.mName);
+        CombatantDetails combatantDetails = CombatantDetails.newInstance(c.mName, mEncounter.mName);
         FragmentManager fragmentManager = getActivity().getFragmentManager();
 
-        fragmentManager.beginTransaction().replace(android.R.id.content,creatureDetails).addToBackStack(null).commit();
+        fragmentManager.beginTransaction().replace(android.R.id.content,combatantDetails).addToBackStack(null).commit();
     }
 
     public void rollInitiative() {
@@ -271,6 +270,8 @@ public class CombatFragment extends Fragment implements AbsListView.OnItemClickL
         for (Combatant c : mCombatantList) {
             c.mInitiative = rand.nextInt(20) + 1 + c.mInitiativeMod;
         }
+        DatabaseHelper db = new DatabaseHelper(getActivity());
+        db.updateEncounter(mEncounter);
         updateInitiativeOrder();
     }
     public void updateInitiativeOrder() {

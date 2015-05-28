@@ -13,6 +13,8 @@
     <string name="save_encounter">Save Encounter</string>
     <string name="remove_encounter">Remove Encounter</string>
 
+    <string name="delete_combatant">Delete Combatant</string>
+
     <string name="encounters">Encounters</string>
     <string name="creatures">Creatures</string>
 
