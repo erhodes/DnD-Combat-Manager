@@ -1,6 +1,8 @@
 package com.eric.ddcombatmanager;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -10,7 +12,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Eric on 05/05/2015.
@@ -121,9 +128,35 @@ public class CreatureDetails extends Fragment {
             mCreatureManager.saveCreature(mCreature);
             return true;
         } else if (id == R.id.action_duplicate_creature) {
-            // TODO: Implement this in a better way
-            Creature c = mCreatureManager.duplicateCreature(mCreature);
-            mCreatureManager.saveCreature(c);
+            View v = getActivity().getLayoutInflater().inflate(R.layout.dialog_number_chooser, null);
+            final Spinner spinner = (Spinner)v.findViewById(R.id.spinner);
+
+            List<Integer> numbers = new ArrayList<Integer>();
+            for (int i = 1; i <= 10; i++) {
+                numbers.add(i);
+            }
+            ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(getActivity(), R.layout.spinner_text, numbers);
+            spinner.setAdapter(adapter);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setView(v);
+            builder.setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    for (int i = 1; i <= (Integer) spinner.getSelectedItem(); i++) {
+                        Creature c = new Creature(mCreature, mCreature.mName + (i + 1));
+                        mCreatureManager.saveCreature(c);
+                    }
+                }
+            });
+            builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            builder.create().show();
+
             return true;
         } else if (id == R.id.action_delete_creature) {
             mCreatureManager.removeCreature(mCreature);

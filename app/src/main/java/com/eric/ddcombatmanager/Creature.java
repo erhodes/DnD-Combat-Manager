@@ -28,4 +28,9 @@ public class Creature {
         mMaxHealth = c.mMaxHealth;
         mCurrentHealth = c.mCurrentHealth;
     }
+
+    public Creature(Creature c, String n) {
+        this(n, c.mInitiative, c.mMaxHealth, c.mCurrentHealth);
+    }
+
 }
